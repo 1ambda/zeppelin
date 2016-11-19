@@ -81,7 +81,7 @@ before_script:
   - tail conf/zeppelin-env.sh
 
 script:
-  - mvn $TEST_FLAG $PROFILE -B $TEST_PROJECTS
+  - MAVEN_OPTS="-Xms1024M -Xmx2048M -XX:-UseGCOverheadLimit" mvn $TEST_FLAG $PROFILE -B $TEST_PROJECTS
   - rm -rf .node_modules; cp -r zeppelin-web/node_modules .node_modules
 
 after_success:
