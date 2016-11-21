@@ -488,7 +488,7 @@
               <validationSet>
                 <dir>${project.basedir}</dir>
                 <includes>pom.xml</includes>
-                <systemId>${project.basedir}/_tools/maven-4.0.0.xsd</systemId>
+                <systemId>_tools/maven-4.0.0.xsd</systemId>
               </validationSet>
             </validationSets>
           </configuration>
