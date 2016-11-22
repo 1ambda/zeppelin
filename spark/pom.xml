@@ -45,6 +45,17 @@
     <maven.aeither.provider.version>3.0.3</maven.aeither.provider.version>
     <wagon.version>1.0</wagon.version>
 
+    <!-- settings -->
+    <pyspark.test.exclude>**/PySparkInterpreterMatplotlibTest.java</pyspark.test.exclude>
+    <pyspark.test.include>**/*Test.*</pyspark.test.include>
+
+    <!--test library versions-->
+    <datanucleus.rdbms.version>3.2.9</datanucleus.rdbms.version>
+    <datanucleus.apijdo.version>3.2.6</datanucleus.apijdo.version>
+    <datanucleus.core.version>3.2.10</datanucleus.core.version>
+
+    <mockito.version>1.10.19</mockito.version>
+    <powermock.version>1.6.4</powermock.version>
     <datanucleus.rdbms.version>3.2.9</datanucleus.rdbms.version>
     <datanucleus.apijdo.version>3.2.6</datanucleus.apijdo.version>
     <datanucleus.core.version>3.2.10</datanucleus.core.version>
@@ -52,10 +63,6 @@
     <!--plugin versions-->
     <plugin.shade.version>2.3</plugin.shade.version>
     <plugin.scala.version>2.15.2</plugin.scala.version>
-
-    <!-- settings -->
-    <pyspark.test.exclude>**/PySparkInterpreterMatplotlibTest.java</pyspark.test.exclude>
-    <pyspark.test.include>**/*Test.*</pyspark.test.include>
   </properties>
 
   <dependencies>
