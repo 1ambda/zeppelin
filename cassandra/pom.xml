@@ -43,6 +43,10 @@
 
         <!-- test library versions -->
         <achilles.version>3.2.4-Zeppelin</achilles.version>
+        <junit.version>4.12</junit.version>
+        <achilles.version>3.2.4-Zeppelin</achilles.version>
+        <assertj.version>1.7.0</assertj.version>
+        <mockito.version>1.9.5</mockito.version>
         <jna.version>4.2.0</jna.version>
 
         <!-- plugin versions -->
