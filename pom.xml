@@ -130,6 +130,7 @@
     <plugin.download.version>1.3.0</plugin.download.version>
     <plugin.deploy.version>2.8.2</plugin.deploy.version>
 
+    
     <PermGen>64m</PermGen>
     <MaxPermGen>512m</MaxPermGen>
   </properties>
