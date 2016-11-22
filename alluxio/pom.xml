@@ -34,6 +34,8 @@
 
     <properties>
         <alluxio.version>1.0.0</alluxio.version>
+        <powermock.version>1.6.1</powermock.version>
+        <mockito.version>1.10.8</mockito.version>
     </properties>
 
     <dependencies>
@@ -75,6 +77,7 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-all</artifactId>
+            <version>${mockito.version}</version>
             <scope>test</scope>
         </dependency>
 
