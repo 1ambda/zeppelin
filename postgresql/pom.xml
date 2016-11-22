@@ -37,9 +37,7 @@
     <postgresql.version>9.4-1201-jdbc41</postgresql.version>
     <jline.version>2.12.1</jline.version>
 
-    <!--test library versions-->
     <mockrunner.jdbc.version>1.0.8</mockrunner.jdbc.version>
-
   </properties>
 
   <dependencies>
