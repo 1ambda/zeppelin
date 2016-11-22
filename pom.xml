@@ -221,6 +221,13 @@
         <version>${guava.version}</version>
       </dependency>
 
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>${junit.version}</version>
+        <scope>test</scope>
+      </dependency>
+
       <!-- Apache Shiro -->
       <dependency>
         <groupId>org.apache.shiro</groupId>
@@ -391,6 +398,7 @@
 
       <plugin>
         <artifactId>maven-dependency-plugin</artifactId>
+        <version>${plugin.dependency.version}</version>
         <executions>
           <execution>
             <id>copy-dependencies</id>
