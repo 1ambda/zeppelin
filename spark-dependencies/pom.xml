@@ -57,12 +57,12 @@
 
     <spark.archive>spark-${spark.version}</spark.archive>
     <spark.download.url>
-      http://archive.apache.org/dist/spark/${spark.archive}/${spark.archive}.tgz
+      http://d3kbcqa49mib13.cloudfront.net/${spark.archive}.tgz
     </spark.download.url>
     <spark.bin.download.url>
-      http://archive.apache.org/dist/spark/spark-${spark.version}/spark-${spark.version}-bin-without-hadoop.tgz
+      http://d3kbcqa49mib13.cloudfront.net/spark-${spark.version}-bin-without-hadoop.tgz
     </spark.bin.download.url>
-    <spark.dist.cache>${project.build.directory}/../../.spark-dist</spark.dist.cache>
+    <spark.dist.cache>${project.basedir}/../.spark-dist</spark.dist.cache>
     <py4j.version>0.8.2.1</py4j.version>
   </properties>
 
@@ -823,7 +823,7 @@
           <plugin>
             <groupId>com.googlecode.maven-download-plugin</groupId>
             <artifactId>download-maven-plugin</artifactId>
-            <version>1.2.1</version>
+            <version>1.3.0</version>
             <executions>
               <execution>
                 <id>download-pyspark-files</id>
@@ -832,6 +832,7 @@
                   <goal>wget</goal>
                 </goals>
                 <configuration>
+                  <readTimeOut>60000</readTimeOut>
                   <retries>5</retries>
                   <url>${spark.download.url}</url>
                   <outputDirectory>${spark.dist.cache}</outputDirectory>
@@ -903,7 +904,7 @@
           <plugin>
             <groupId>com.googlecode.maven-download-plugin</groupId>
             <artifactId>download-maven-plugin</artifactId>
-            <version>1.2.1</version>
+            <version>1.3.0</version>
             <executions>
               <execution>
                 <id>download-sparkr-files</id>
@@ -912,6 +913,8 @@
                   <goal>wget</goal>
                 </goals>
                 <configuration>
+                  <readTimeOut>60000</readTimeOut>
+                  <retries>5</retries>
                   <url>${spark.bin.download.url}</url>
                   <unpack>true</unpack>
                   <outputDirectory>${project.build.directory}/spark-bin-dist</outputDirectory>
