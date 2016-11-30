@@ -1,6 +1,14 @@
 ### Build
 
 ```
+# base image
+
+$ cd ../zeppelin-base
+$ docker build . -t 1ambda/zeppelin-base
+```
+
+```
+$ 0.6.2 bin
 docker build . -t 1ambda/zeppelin-docker:0.6.2
 ```
 
