@@ -16,8 +16,8 @@
 # limitations under the License.
 #
 
-if [[ "$#" -ne 2 ]]; then
-    echo "usage) $0 [spark version] [hadoop version]"
+if [[ "$#" -ne 2 && "$#" -ne 1 ]]; then
+    echo "usage) $0 (spark version) [hadoop version]"
     echo "   eg) $0 1.3.1 2.6"
     exit 0
 fi
@@ -43,14 +43,31 @@ ZEPPELIN_HOME="$(cd "${FWDIR}/.."; pwd)"
 #######################################
 download_with_retry() {
     local url="$1"
-    wget --retry-connrefused --waitretry=1 --read-timeout=20 --timeout=15 -t 3 "${url}"
+    local start_time=`date +%s`
+
+    wget -v -d --retry-connrefused --waitretry=1 --read-timeout=20 --timeout=15 -t 3 "${url}"
     if [[ "$?" -ne 0 ]]; then
         echo "3 download attempts for ${url} failed"
     fi
+    local end_time=`date +%s`
+    local download_time="$((end_time-start_time))"
 }
+
+#Special 'mode' for downloading only Spark sourcese, required by pySpark.
+#A workaroun for failing download on CI: populate maven-download-plugin cache \w wget
+#https://github.com/travis-ci/travis-ci/issues/6950
+if [[ -z "$HADOOP_VERSION" ]]; then
+   spark_archive_file="spark-${SPARK_VERSION}.tgz"
+   mvn_plugin_cache_dir="${HOME}/.m2/repository/.cache/maven-download-plugin"
+   download_with_retry "http://d3kbcqa49mib13.cloudfront.net/${spark_archive_file}"
+   mkdir -p "${mvn_plugin_cache_dir}"
+   mv "${spark_archive_file}" "${mvn_plugin_cache_dir}"
+   exit 0
+fi
 
 SPARK_CACHE=".spark-dist"
 SPARK_ARCHIVE="spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}"
+
 export SPARK_HOME="${ZEPPELIN_HOME}/${SPARK_ARCHIVE}"
 echo "SPARK_HOME is ${SPARK_HOME}"
 
@@ -64,11 +81,8 @@ if [[ ! -d "${SPARK_HOME}" ]]; then
 
         # download spark from archive if not cached
         echo "${SPARK_VERSION} being downloaded from archives"
-        STARTTIME=`date +%s`
         #timeout -s KILL "${MAX_DOWNLOAD_TIME_SEC}" wget "http://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/${SPARK_ARCHIVE}.tgz"
         download_with_retry "http://d3kbcqa49mib13.cloudfront.net/${SPARK_ARCHIVE}.tgz"
-        ENDTIME=`date +%s`
-        DOWNLOADTIME="$((ENDTIME-STARTTIME))"
     fi
 
     # extract archive in un-cached root, clean-up on failure
