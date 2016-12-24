@@ -68,18 +68,6 @@ module.exports = function(grunt) {
       }
     },
 
-    // use ngAnnotate instead og ngMin
-    ngAnnotate: {
-      dist: {
-        files: [{
-          expand: true,
-          cwd: '.tmp/concat/scripts',
-          src: '*.js',
-          dest: '.tmp/concat/scripts'
-        }]
-      }
-    },
-
     htmlhint: {
       options: {
         'tagname-lowercase': true,
@@ -621,7 +609,6 @@ module.exports = function(grunt) {
     'postcss',
     'concat',
     'babel:dist',
-    'ngAnnotate',
     'copy:dist',
     'cssmin',
     'uglify',
