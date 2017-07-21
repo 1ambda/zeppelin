@@ -25,7 +25,6 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
   $scope.showAddNewSetting = false
   $scope.showRepositoryInfo = false
   $scope.searchInterpreter = ''
-  $scope._ = _
   $scope.interpreterPropertyTypes = []
   ngToast.dismiss()
 
@@ -184,7 +183,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
   }
 
   $scope.copyOriginInterpreterSettingProperties = function (settingId) {
-    let index = _.findIndex($scope.interpreterSettings, {'id': settingId})
+    let index = $scope.interpreterSettings.findIndex(is => is.id === settingId)
     interpreterSettingsTmp[index] = angular.copy($scope.interpreterSettings[index])
   }
 
@@ -193,7 +192,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     if (settingId === undefined) {
       option = $scope.newInterpreterSetting.option
     } else {
-      let index = _.findIndex($scope.interpreterSettings, {'id': settingId})
+      let index = $scope.interpreterSettings.findIndex(is => is.id === settingId)
       let setting = $scope.interpreterSettings[index]
       option = setting.option
     }
@@ -227,7 +226,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     if (settingId === undefined) {
       option = $scope.newInterpreterSetting.option
     } else {
-      let index = _.findIndex($scope.interpreterSettings, {'id': settingId})
+      let index = $scope.interpreterSettings.findIndex(is => is.id === settingId)
       let setting = $scope.interpreterSettings[index]
       option = setting.option
     }
@@ -252,7 +251,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     if (settingId === undefined) {
       option = $scope.newInterpreterSetting.option
     } else {
-      let index = _.findIndex($scope.interpreterSettings, {'id': settingId})
+      let index = $scope.interpreterSettings.findIndex(is => is.id === settingId)
       let setting = $scope.interpreterSettings[index]
       option = setting.option
     }
@@ -271,7 +270,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     if (settingId === undefined) {
       option = $scope.newInterpreterSetting.option
     } else {
-      let index = _.findIndex($scope.interpreterSettings, {'id': settingId})
+      let index = $scope.interpreterSettings.findIndex(is => is.id === settingId)
       let setting = $scope.interpreterSettings[index]
       option = setting.option
     }
@@ -296,7 +295,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     if (settingId === undefined) {
       option = $scope.newInterpreterSetting.option
     } else {
-      let index = _.findIndex($scope.interpreterSettings, {'id': settingId})
+      let index = $scope.interpreterSettings.findIndex(is => is.id === settingId)
       let setting = $scope.interpreterSettings[index]
       option = setting.option
     }
@@ -332,7 +331,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     if (settingId === undefined) {
       option = $scope.newInterpreterSetting.option
     } else {
-      let index = _.findIndex($scope.interpreterSettings, {'id': settingId})
+      let index = $scope.interpreterSettings.findIndex(is => is.id === settingId)
       let setting = $scope.interpreterSettings[index]
       option = setting.option
     }
@@ -349,7 +348,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
       message: 'Do you want to update this interpreter and restart with new settings?',
       callback: function (result) {
         if (result) {
-          let index = _.findIndex($scope.interpreterSettings, {'id': settingId})
+          let index = $scope.interpreterSettings.findIndex(is => is.id === settingId)
           let setting = $scope.interpreterSettings[index]
           if (setting.propertyKey !== '' || setting.propertyKey) {
             $scope.addNewInterpreterProperty(settingId)
@@ -412,7 +411,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
   }
 
   $scope.resetInterpreterSetting = function (settingId) {
-    let index = _.findIndex($scope.interpreterSettings, {'id': settingId})
+    let index = $scope.interpreterSettings.findIndex(is => is.id === settingId)
 
     // Set the old settings back
     $scope.interpreterSettings[index] = angular.copy(interpreterSettingsTmp[index])
@@ -428,7 +427,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
         if (result) {
           $http.delete(baseUrlSrv.getRestApiBase() + '/interpreter/setting/' + settingId)
             .success(function (data, status, headers, config) {
-              let index = _.findIndex($scope.interpreterSettings, {'id': settingId})
+              let index = $scope.interpreterSettings.findIndex(is => is.id === settingId)
               $scope.interpreterSettings.splice(index, 1)
             }).error(function (data, status, headers, config) {
               console.log('Error %o %o', status, data.message)
@@ -439,8 +438,18 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
   }
 
   $scope.newInterpreterGroupChange = function () {
-    let el = _.pluck(_.filter($scope.availableInterpreters, {'name': $scope.newInterpreterSetting.group}),
-      'properties')
+    const availableInterpreters = $scope.availableInterpreters
+    const availableInterpreterKeys = Object.keys(availableInterpreters)
+    const filtered = []
+
+    for (let key of availableInterpreterKeys) {
+      const intp = availableInterpreters[key]
+      if (intp.name === $scope.newInterpreterSetting.group) {
+        filtered.push(intp)
+      }
+    }
+
+    let el = filtered.map(is => is.properties)
     let properties = {}
     for (let i = 0; i < el.length; i++) {
       let intpInfo = el[i]
@@ -464,7 +473,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
         if (result) {
           $http.put(baseUrlSrv.getRestApiBase() + '/interpreter/setting/restart/' + settingId)
             .success(function (data, status, headers, config) {
-              let index = _.findIndex($scope.interpreterSettings, {'id': settingId})
+              let index = $scope.interpreterSettings.findIndex(is => is.id === settingId)
               $scope.interpreterSettings[index] = data.body
               ngToast.info('Interpreter stopped. Will be lazily started on next run.')
             }).error(function (data, status, headers, config) {
@@ -498,7 +507,8 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
       return
     }
 
-    if (_.findIndex($scope.interpreterSettings, {'name': $scope.newInterpreterSetting.name}) >= 0) {
+    let index = $scope.interpreterSettings.findIndex(is => is.name === $scope.newInterpreterSetting.name)
+    if (index >= 0) {
       BootstrapDialog.alert({
         closable: true,
         title: 'Add interpreter',
@@ -573,22 +583,22 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     if (settingId === undefined) {
       delete $scope.newInterpreterSetting.properties[key]
     } else {
-      let index = _.findIndex($scope.interpreterSettings, {'id': settingId})
+      let index = $scope.interpreterSettings.findIndex(is => is.id === settingId)
       delete $scope.interpreterSettings[index].properties[key]
     }
   }
 
   $scope.removeInterpreterDependency = function (artifact, settingId) {
     if (settingId === undefined) {
-      $scope.newInterpreterSetting.dependencies = _.reject($scope.newInterpreterSetting.dependencies,
-        function (el) {
-          return el.groupArtifactVersion === artifact
+      $scope.newInterpreterSetting.dependencies = $scope.newInterpreterSetting.dependencies
+        .filter(dep => {
+          return dep.groupArtifactVersion !== artifact
         })
     } else {
-      let index = _.findIndex($scope.interpreterSettings, {'id': settingId})
-      $scope.interpreterSettings[index].dependencies = _.reject($scope.interpreterSettings[index].dependencies,
-        function (el) {
-          return el.groupArtifactVersion === artifact
+      let index = $scope.interpreterSettings.findIndex(is => is.id === settingId)
+      $scope.interpreterSettings[index].dependencies = $scope.interpreterSettings[index].dependencies
+        .filter(dep => {
+          return dep.groupArtifactVersion !== artifact
         })
     }
   }
@@ -606,7 +616,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
       emptyNewProperty($scope.newInterpreterSetting)
     } else {
       // Add new property from edit form
-      let index = _.findIndex($scope.interpreterSettings, {'id': settingId})
+      let index = $scope.interpreterSettings.findIndex(is => is.id === settingId)
       let setting = $scope.interpreterSettings[index]
 
       if (!setting.propertyKey || setting.propertyKey === '') {
@@ -646,7 +656,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
       emptyNewDependency(newSetting)
     } else {
       // Add new dependency from edit form
-      let index = _.findIndex($scope.interpreterSettings, {'id': settingId})
+      let index = $scope.interpreterSettings.findIndex(is => is.id === settingId)
       let setting = $scope.interpreterSettings[index]
       if (!setting.depArtifact || setting.depArtifact === '') {
         return
@@ -717,7 +727,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
         if (result) {
           $http.delete(baseUrlSrv.getRestApiBase() + '/interpreter/repository/' + repoId)
             .success(function (data, status, headers, config) {
-              let index = _.findIndex($scope.repositories, {'id': repoId})
+              let index = $scope.repositories.findIndex(r => r.id === repoId)
               $scope.repositories.splice(index, 1)
             }).error(function (data, status, headers, config) {
               console.log('Error %o %o', status, data.message)
@@ -777,6 +787,14 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
   $scope.getInterpreterBindingModeDocsLink = function() {
     const currentVersion = $rootScope.zeppelinVersion
     return `https://zeppelin.apache.org/docs/${currentVersion}/usage/interpreter/interpreter_binding_mode.html`
+  }
+
+  $scope.isEmptyDependencies = function(dependencies) {
+    return dependencies.length === 0
+  }
+
+  $scope.isEmptyProperties = function() {
+    return Object.keys(obj).length === 0 && obj.constructor === Object
   }
 
   init()

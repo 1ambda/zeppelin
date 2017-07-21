@@ -387,10 +387,10 @@ limitations under the License.
     </div>
 
     <div class="row interpreter" style="margin-top:20px !important">
-      <div ng-show="_.isEmpty(setting.properties) && _.isEmpty(setting.dependencies) && !valueform.$visible" class="col-md-12 gray40-message">
+      <div ng-show="isEmptyProperties(setting.properties) && isEmptyDependencies(setting.dependencies) && !valueform.$visible" class="col-md-12 gray40-message">
         <em>Currently there are no properties and dependencies set for this interpreter</em>
       </div>
-      <div class="col-md-12" ng-show="!_.isEmpty(setting.properties) || valueform.$visible">
+      <div class="col-md-12" ng-show="!isEmptyProperties(setting.properties) || valueform.$visible">
         <h5>Properties</h5>
         <table class="table table-striped">
           <thead>
@@ -462,7 +462,7 @@ limitations under the License.
       </div>
     </div>
     <div class="row interpreter">
-      <div class="col-md-12" ng-show="!_.isEmpty(setting.dependencies) || valueform.$visible">
+      <div class="col-md-12" ng-show="!isEmptyDependencies(setting.dependencies) || valueform.$visible">
         <h5>Dependencies</h5>
         <p class="gray40-message" style="font-size:12px" ng-show="valueform.$visible">
           These dependencies will be added to classpath when interpreter process starts.</p>
