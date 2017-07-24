@@ -13,10 +13,13 @@
  */
 
 import { ParagraphStatus, } from '../notebook/paragraph/paragraph.status'
+import { InterpreterService } from './interpreter.service'
 
-angular.module('zeppelinWebApp').controller('InterpreterCtrl', InterpreterCtrl)
+angular.module('zeppelinWebApp')
+  .controller('InterpreterCtrl', InterpreterController)
+  .service('InterpreterService', InterpreterService)
 
-function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeout, $route) {
+function InterpreterController($rootScope, $scope, baseUrlSrv, InterpreterService, ngToast, $timeout, $route) {
   'ngInject'
 
   let interpreterSettingsTmp = []
@@ -25,7 +28,7 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
   $scope.showAddNewSetting = false
   $scope.showRepositoryInfo = false
   $scope.searchInterpreter = ''
-  $scope.interpreterPropertyTypes = []
+  $scope.interpreterPropertyTypes = ['textarea', 'string', 'number', 'url', 'password', 'checkbox']
   ngToast.dismiss()
 
   $scope.openPermissions = function () {
@@ -108,23 +111,12 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
   })
 
   let getInterpreterSettings = function () {
-    $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/setting')
-      .success(function (data, status, headers, config) {
-        $scope.interpreterSettings = data.body
+    return InterpreterService.getInterpreterSettings()
+      .then(interpreterSettings => {
+        $scope.interpreterSettings = interpreterSettings
         checkDownloadingDependencies()
-      }).error(function (data, status, headers, config) {
-        if (status === 401) {
-          ngToast.danger({
-            content: 'You don\'t have permission on this page',
-            verticalPosition: 'bottom',
-            timeout: '3000'
-          })
-          setTimeout(function () {
-            window.location = baseUrlSrv.getBase()
-          }, 3000)
-        }
-        console.log('Error %o %o', status, data.message)
       })
+      .catch(handleHttpError('Failed to get interpreter settings'))
   }
 
   const checkDownloadingDependencies = function () {
@@ -154,20 +146,11 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
   }
 
   let getAvailableInterpreters = function () {
-    $http.get(baseUrlSrv.getRestApiBase() + '/interpreter').success(function (data, status, headers, config) {
-      $scope.availableInterpreters = data.body
-    }).error(function (data, status, headers, config) {
-      console.log('Error %o %o', status, data.message)
-    })
-  }
-
-  let getAvailableInterpreterPropertyWidgets = function () {
-    $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/property/types')
-      .success(function (data, status, headers, config) {
-        $scope.interpreterPropertyTypes = data.body
-      }).error(function (data, status, headers, config) {
-        console.log('Error %o %o', status, data.message)
+    InterpreterService.getAvailableInterpreters()
+      .then(availableInterpreters => {
+        $scope.availableInterpreters = availableInterpreters
       })
+      .catch(handleHttpError('Failed to get available interpreters'))
   }
 
   let emptyNewProperty = function(object) {
@@ -347,65 +330,64 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
       title: '',
       message: 'Do you want to update this interpreter and restart with new settings?',
       callback: function (result) {
-        if (result) {
-          let index = $scope.interpreterSettings.findIndex(is => is.id === settingId)
-          let setting = $scope.interpreterSettings[index]
-          if (setting.propertyKey !== '' || setting.propertyKey) {
-            $scope.addNewInterpreterProperty(settingId)
-          }
-          if (setting.depArtifact !== '' || setting.depArtifact) {
-            $scope.addNewInterpreterDependency(settingId)
-          }
-          // add missing field of option
-          if (!setting.option) {
-            setting.option = {}
-          }
-          if (setting.option.isExistingProcess === undefined) {
-            setting.option.isExistingProcess = false
-          }
-          if (setting.option.setPermission === undefined) {
-            setting.option.setPermission = false
-          }
-          if (setting.option.isUserImpersonate === undefined) {
-            setting.option.isUserImpersonate = false
-          }
-          if (!($scope.getInterpreterRunningOption(settingId) === 'Per User' &&
-            $scope.getPerUserOption(settingId) === 'isolated')) {
-            setting.option.isUserImpersonate = false
-          }
-          if (setting.option.remote === undefined) {
-            // remote always true for now
-            setting.option.remote = true
-          }
-          setting.option.owners = angular.element('#' + setting.name + 'Owners').val()
-
-          let request = {
-            option: angular.copy(setting.option),
-            properties: angular.copy(setting.properties),
-            dependencies: angular.copy(setting.dependencies)
-          }
-
-          thisConfirm.$modalFooter.find('button').addClass('disabled')
-          thisConfirm.$modalFooter.find('button:contains("OK")')
-            .html('<i class="fa fa-circle-o-notch fa-spin"></i> Saving Setting')
-
-          $http.put(baseUrlSrv.getRestApiBase() + '/interpreter/setting/' + settingId, request)
-            .success(function (data, status, headers, config) {
-              $scope.interpreterSettings[index] = data.body
-              removeTMPSettings(index)
-              checkDownloadingDependencies()
-              thisConfirm.close()
-            })
-            .error(function (data, status, headers, config) {
-              console.log('Error %o %o', status, data.message)
-              ngToast.danger({content: data.message, verticalPosition: 'bottom'})
-              form.$show()
-              thisConfirm.close()
-            })
-          return false
-        } else {
+        if (!result) {
           form.$show()
+          return
         }
+
+        let index = $scope.interpreterSettings.findIndex(is => is.id === settingId)
+        let setting = $scope.interpreterSettings[index]
+        if (setting.propertyKey !== '' || setting.propertyKey) {
+          $scope.addNewInterpreterProperty(settingId)
+        }
+        if (setting.depArtifact !== '' || setting.depArtifact) {
+          $scope.addNewInterpreterDependency(settingId)
+        }
+        // add missing field of option
+        if (!setting.option) {
+          setting.option = {}
+        }
+        if (setting.option.isExistingProcess === undefined) {
+          setting.option.isExistingProcess = false
+        }
+        if (setting.option.setPermission === undefined) {
+          setting.option.setPermission = false
+        }
+        if (setting.option.isUserImpersonate === undefined) {
+          setting.option.isUserImpersonate = false
+        }
+        if (!($scope.getInterpreterRunningOption(settingId) === 'Per User' &&
+            $scope.getPerUserOption(settingId) === 'isolated')) {
+          setting.option.isUserImpersonate = false
+        }
+        if (setting.option.remote === undefined) {
+          // remote always true for now
+          setting.option.remote = true
+        }
+        setting.option.owners = angular.element('#' + setting.name + 'Owners').val()
+
+        let request = {
+          option: angular.copy(setting.option),
+          properties: angular.copy(setting.properties),
+          dependencies: angular.copy(setting.dependencies)
+        }
+
+        thisConfirm.$modalFooter.find('button').addClass('disabled')
+        thisConfirm.$modalFooter.find('button:contains("OK")')
+          .html('<i class="fa fa-circle-o-notch fa-spin"></i> Saving Setting')
+
+        InterpreterService.updateInterpreterSetting(settingId, request)
+          .then(updatedSetting => {
+            showInfoToast(`Interpreter setting ${settingId} was updated`)
+            $scope.interpreterSettings[index] = updatedSetting
+            removeTMPSettings(index)
+            checkDownloadingDependencies()
+          })
+          .catch(handleHttpError('Failed to update interpreter setting'))
+          .then(() => {
+            thisConfirm.close()
+          })
+        return false
       }
     })
   }
@@ -424,15 +406,15 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
       title: '',
       message: 'Do you want to delete this interpreter setting?',
       callback: function (result) {
-        if (result) {
-          $http.delete(baseUrlSrv.getRestApiBase() + '/interpreter/setting/' + settingId)
-            .success(function (data, status, headers, config) {
-              let index = $scope.interpreterSettings.findIndex(is => is.id === settingId)
-              $scope.interpreterSettings.splice(index, 1)
-            }).error(function (data, status, headers, config) {
-              console.log('Error %o %o', status, data.message)
-            })
-        }
+        if (!result) { return }
+
+        InterpreterService.removeInterpreterSetting(settingId)
+          .then(() => {
+            showInfoToast(`Interpreter setting ${settingId} was removed`)
+            let index = $scope.interpreterSettings.findIndex(is => is.id === settingId)
+            $scope.interpreterSettings.splice(index, 1)
+          })
+          .catch(handleHttpError(`Failed to remove interpreter setting: ${settingId}`))
       }
     })
   }
@@ -470,18 +452,15 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
       title: '',
       message: 'Do you want to restart this interpreter?',
       callback: function (result) {
-        if (result) {
-          $http.put(baseUrlSrv.getRestApiBase() + '/interpreter/setting/restart/' + settingId)
-            .success(function (data, status, headers, config) {
-              let index = $scope.interpreterSettings.findIndex(is => is.id === settingId)
-              $scope.interpreterSettings[index] = data.body
-              ngToast.info('Interpreter stopped. Will be lazily started on next run.')
-            }).error(function (data, status, headers, config) {
-              let errorMsg = (data !== null) ? data.message : 'Could not connect to server.'
-              console.log('Error %o %o', status, errorMsg)
-              ngToast.danger(errorMsg)
-            })
-        }
+        if (!result) { return }
+
+        InterpreterService.restartInterpreter(settingId)
+          .then(updatedInterpreterSetting => {
+            showInfoToast('Interpreter stopped. Will be lazily started on next run.')
+            let index = $scope.interpreterSettings.findIndex(is => is.id === settingId)
+            $scope.interpreterSettings[index] = updatedInterpreterSetting
+          })
+          .catch(handleHttpError('Failed to restart interpreter'))
       }
     })
   }
@@ -543,17 +522,16 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     }
 
     request.properties = newProperties
+    const interpreterSettingName = $scope.newInterpreterSetting.name
 
-    $http.post(baseUrlSrv.getRestApiBase() + '/interpreter/setting', request)
-      .success(function (data, status, headers, config) {
+    InterpreterService.addInterpreterSetting(request)
+      .then(() => {
+        showInfoToast(`Interpreter setting ${interpreterSettingName} is created`)
         $scope.resetNewInterpreterSetting()
-        getInterpreterSettings()
         $scope.showAddNewSetting = false
-        checkDownloadingDependencies()
-      }).error(function (data, status, headers, config) {
-        console.log('Error %o %o', status, data.message)
-        ngToast.danger({content: data.message, verticalPosition: 'bottom'})
+        return getInterpreterSettings()
       })
+      .catch(handleHttpError('Failed to add a new interpreter'))
   }
 
   $scope.cancelInterpreterSetting = function () {
@@ -697,25 +675,22 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
   }
 
   let getRepositories = function () {
-    $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/repository')
-      .success(function (data, status, headers, config) {
-        $scope.repositories = data.body
-      }).error(function (data, status, headers, config) {
-        console.log('Error %o %o', status, data.message)
+    return InterpreterService.getRepositories()
+      .then(repositories => {
+        $scope.repositories = repositories
       })
+      .catch(handleHttpError('Failed to get repositories'))
   }
 
   $scope.addNewRepository = function () {
     let request = angular.copy($scope.newRepoSetting)
-
-    $http.post(baseUrlSrv.getRestApiBase() + '/interpreter/repository', request)
-      .success(function (data, status, headers, config) {
-        getRepositories()
+    InterpreterService.addRepository(request)
+      .then(() => {
         $scope.resetNewRepositorySetting()
         angular.element('#repoModal').modal('hide')
-      }).error(function (data, status, headers, config) {
-        console.log('Error %o %o', headers, config)
+        return getRepositories()
       })
+      .catch(handleHttpError('Failed to add a new repository'))
   }
 
   $scope.removeRepository = function (repoId) {
@@ -724,15 +699,14 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
       title: '',
       message: 'Do you want to delete this repository?',
       callback: function (result) {
-        if (result) {
-          $http.delete(baseUrlSrv.getRestApiBase() + '/interpreter/repository/' + repoId)
-            .success(function (data, status, headers, config) {
-              let index = $scope.repositories.findIndex(r => r.id === repoId)
-              $scope.repositories.splice(index, 1)
-            }).error(function (data, status, headers, config) {
-              console.log('Error %o %o', status, data.message)
-            })
-        }
+        if (!result) { return }
+
+        InterpreterService.removeRepository(repoId)
+          .then(() => {
+            let index = $scope.repositories.findIndex(r => r.id === repoId)
+            $scope.repositories.splice(index, 1)
+          })
+          .catch(handleHttpError(`Failed to remove repository: ${repoId}`))
       }
     })
   }
@@ -753,8 +727,6 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
   }
 
   let init = function() {
-    getAvailableInterpreterPropertyWidgets()
-
     $scope.resetNewInterpreterSetting()
     $scope.resetNewRepositorySetting()
 
@@ -764,24 +736,20 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
   }
 
   $scope.showSparkUI = function (settingId) {
-    $http.get(baseUrlSrv.getRestApiBase() + '/interpreter/metadata/' + settingId)
-      .success(function (data, status, headers, config) {
-        if (data.body === undefined) {
-          BootstrapDialog.alert({
-            message: 'No spark application running'
-          })
+    InterpreterService.getSparkUIInfo(settingId)
+      .then(({ isSparkAppRunning, sparkAppUrl, message }) => {
+        if (!isSparkAppRunning) {
+          BootstrapDialog.alert({ message: 'No spark application running' })
           return
         }
-        if (data.body.url) {
-          window.open(data.body.url, '_blank')
+
+        if (sparkAppUrl) {
+          window.open(sparkAppUrl, '_blank')
         } else {
-          BootstrapDialog.alert({
-            message: data.body.message
-          })
+          BootstrapDialog.alert({ message: message })
         }
-      }).error(function (data, status, headers, config) {
-        console.log('Error %o %o', status, data.message)
       })
+      .catch(handleHttpError('Failed to get information for Spark UI'))
   }
 
   $scope.getInterpreterBindingModeDocsLink = function() {
@@ -793,8 +761,46 @@ function InterpreterCtrl($rootScope, $scope, $http, baseUrlSrv, ngToast, $timeou
     return dependencies.length === 0
   }
 
-  $scope.isEmptyProperties = function() {
+  $scope.isEmptyProperties = function(obj) {
     return Object.keys(obj).length === 0 && obj.constructor === Object
+  }
+
+  function showInfoToast(message) {
+    ngToast.info({
+      content: message,
+      timeout: '3000',
+      verticalPosition: 'bottom',
+    })
+  }
+
+  function handleHttpError(defaultMessage) {
+    return function(response) {
+      const status = response.status
+      let message = defaultMessage
+
+      if (response.data && response.data.message) {
+        message = response.data.message
+      }
+
+      if (status === 401) {
+        ngToast.danger({
+          content: 'You don\'t have permission on this page',
+          verticalPosition: 'bottom',
+          timeout: '3000'
+        })
+        setTimeout(function () {
+          window.location = baseUrlSrv.getBase()
+        }, 3000)
+      } else {
+        ngToast.danger({
+          content: message,
+          verticalPosition: 'bottom',
+          timeout: '3000'
+        })
+      }
+
+      console.log('Error %o %o', status, message)
+    }
   }
 
   init()
