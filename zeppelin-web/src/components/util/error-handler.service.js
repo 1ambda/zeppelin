@@ -21,8 +21,6 @@ export class ErrorHandlerService {
   }
 
   handleHttpError(defaultMessage) {
-    const self = this
-
     return (response) => {
       const status = response.status
       let message = defaultMessage
@@ -32,16 +30,14 @@ export class ErrorHandlerService {
       }
 
       if (status === 401) {
-        self.toast.danger({
+        this.toast.danger({
           content: 'You don\'t have permission on this page',
           verticalPosition: 'bottom',
           timeout: '3000'
         })
-        setTimeout(function () {
-          window.location = self.BaseUrlService.getBase()
-        }, 3000)
+        setTimeout( () => { window.location = this.BaseUrlService.getBase() }, 3000)
       } else {
-        self.toast.danger({
+        this.toast.danger({
           content: message,
           verticalPosition: 'bottom',
           timeout: '3000'

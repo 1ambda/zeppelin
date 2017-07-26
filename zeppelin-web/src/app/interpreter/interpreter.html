@@ -55,32 +55,8 @@ limitations under the License.
     </div>
   </div>
 
-  <div class="row" ng-if="showRepositoryInfo">
-    <div class="col-md-12">
-      <hr />
-      <h4>Repositories</h4>
-      <p>Available repository lists. These repositories are used to resolve external dependencies of interpreter.</p>
-      <ul class="noDot">
-        <li class="liVertical" ng-repeat="repo in repositories">
-          <a tabindex="0" class="btn btn-info" role="button"
-             tooltip-append-to-body="true" tooltip-placement="top-left"
-             uib-tooltip="{{repo.url}}">
-            <span class="fa fa-database"></span>
-            {{repo.id}}&nbsp;
-            <span ng-if="!isDefaultRepository(repo.id)" class="fa fa-close blackOpc"
-                  ng-click="removeRepository(repo.id)"></span>
-          </a>
-        </li>
-        <li class="liVertical">
-          <div ng-include src="'app/interpreter/repository-create.html'"></div>
-          <div class="btn btn-default"
-               data-toggle="modal"
-               data-target="#repoModal">
-            <span class="fa fa-plus"></span>
-          </div>
-        </li>
-      </ul>
-    </div>
+  <div>
+    <repository show="showRepositoryInfo"></repository>
   </div>
 
   <div ng-include src="'app/interpreter/interpreter-create.html'"></div>

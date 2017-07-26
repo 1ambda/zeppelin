@@ -15,6 +15,8 @@
 import { ParagraphStatus, } from '../notebook/paragraph/paragraph.status'
 import { InterpreterService } from './interpreter.service'
 
+import './repository'
+
 angular.module('zeppelinWebApp')
   .controller('InterpreterCtrl', InterpreterController)
   .service('InterpreterService', InterpreterService)
@@ -39,7 +41,6 @@ function InterpreterController($rootScope, $scope, ngToast, $timeout, $route,
   $scope.interpreterSettings = []
   $scope.availableInterpreters = {}
   $scope.showAddNewSetting = false
-  $scope.showRepositoryInfo = false
   $scope.searchInterpreter = ''
   $scope.interpreterPropertyTypes = ['textarea', 'string', 'number', 'url', 'password', 'checkbox']
   ngToast.dismiss()
@@ -630,66 +631,6 @@ function InterpreterController($rootScope, $scope, ngToast, $timeout, $route,
     }
   }
 
-  $scope.resetNewRepositorySetting = function () {
-    $scope.newRepoSetting = {
-      id: '',
-      url: '',
-      snapshot: false,
-      username: '',
-      password: '',
-      proxyProtocol: 'HTTP',
-      proxyHost: '',
-      proxyPort: null,
-      proxyLogin: '',
-      proxyPassword: ''
-    }
-  }
-
-  let getRepositories = function () {
-    return InterpreterService.getRepositories()
-      .then(repositories => {
-        $scope.repositories = repositories
-      })
-      .catch(ehs.handleHttpError('Failed to get repositories'))
-  }
-
-  $scope.addNewRepository = function () {
-    let request = angular.copy($scope.newRepoSetting)
-    InterpreterService.addRepository(request)
-      .then(() => {
-        $scope.resetNewRepositorySetting()
-        angular.element('#repoModal').modal('hide')
-        return getRepositories()
-      })
-      .catch(ehs.handleHttpError('Failed to add a new repository'))
-  }
-
-  $scope.removeRepository = function (repoId) {
-    BootstrapDialog.confirm({
-      closable: true,
-      title: '',
-      message: 'Do you want to delete this repository?',
-      callback: function (result) {
-        if (!result) { return }
-
-        InterpreterService.removeRepository(repoId)
-          .then(() => {
-            let index = $scope.repositories.findIndex(r => r.id === repoId)
-            $scope.repositories.splice(index, 1)
-          })
-          .catch(ehs.handleHttpError(`Failed to remove repository: ${repoId}`))
-      }
-    })
-  }
-
-  $scope.isDefaultRepository = function (repoId) {
-    if (repoId === 'central' || repoId === 'local') {
-      return true
-    } else {
-      return false
-    }
-  }
-
   $scope.showErrorMessage = function (setting) {
     BootstrapDialog.show({
       title: 'Error downloading dependencies',
@@ -699,11 +640,9 @@ function InterpreterController($rootScope, $scope, ngToast, $timeout, $route,
 
   let init = function() {
     $scope.resetNewInterpreterSetting()
-    $scope.resetNewRepositorySetting()
 
     getInterpreterSettings()
     getAvailableInterpreters()
-    getRepositories()
   }
 
   $scope.showSparkUI = function (settingId) {
