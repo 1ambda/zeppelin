@@ -129,7 +129,7 @@ limitations under the License.
                  aria-hidden="true"
                  uib-tooltip="Can manage interpreter sessions differently by setting this option. Click this button to learn more"
                  ng-href="{{getInterpreterBindingModeDocsLink()}}" target="_blank"></a>
-            <span ng-if="getInterpreterRunningOption(setting.id) === 'Per User' && ticket.principal !== 'anonymous'">
+              <span ng-if="getInterpreterRunningOption(setting.id) === 'Per User' && ticket.principal !== 'anonymous'">
               <span ng-if="getPerNoteOption(setting.id) === 'shared'">
                 <button type="button" class="btn btn-default btn-xs"
                         ng-click="setPerNoteOption(setting.id, 'scoped')"
@@ -346,7 +346,7 @@ limitations under the License.
               </td>
               <td>
                 <button class="btn btn-default btn-sm fa fa-remove"
-                     ng-click="removeInterpreterDependency(dep.groupArtifactVersion)">
+                        ng-click="removeInterpreterDependency(dep.groupArtifactVersion)">
                 </button>
               </td>
             </tr>

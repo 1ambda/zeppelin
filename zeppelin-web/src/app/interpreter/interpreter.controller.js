@@ -30,9 +30,11 @@ export const InterpreterSessionUnit = {
   PER_NOTE: 'perNote',
 }
 
-function InterpreterController($rootScope, $scope, baseUrlSrv, InterpreterService, ngToast, $timeout, $route) {
+function InterpreterController($rootScope, $scope, ngToast, $timeout, $route,
+                               baseUrlSrv, InterpreterService, ErrorHandlerService) {
   'ngInject'
 
+  let ehs = ErrorHandlerService
   let interpreterSettingsTmp = []
   $scope.interpreterSettings = []
   $scope.availableInterpreters = {}
@@ -127,7 +129,7 @@ function InterpreterController($rootScope, $scope, baseUrlSrv, InterpreterServic
         $scope.interpreterSettings = interpreterSettings
         checkDownloadingDependencies()
       })
-      .catch(handleHttpError('Failed to get interpreter settings'))
+      .catch(ehs.handleHttpError('Failed to get interpreter settings'))
   }
 
   const checkDownloadingDependencies = function () {
@@ -161,7 +163,7 @@ function InterpreterController($rootScope, $scope, baseUrlSrv, InterpreterServic
       .then(availableInterpreters => {
         $scope.availableInterpreters = availableInterpreters
       })
-      .catch(handleHttpError('Failed to get available interpreters'))
+      .catch(ehs.handleHttpError('Failed to get available interpreters'))
   }
 
   let emptyNewProperty = function(object) {
@@ -352,7 +354,7 @@ function InterpreterController($rootScope, $scope, baseUrlSrv, InterpreterServic
             removeTMPSettings(index)
             checkDownloadingDependencies()
           })
-          .catch(handleHttpError('Failed to update interpreter setting'))
+          .catch(ehs.handleHttpError('Failed to update interpreter setting'))
           .then(() => {
             thisConfirm.close()
           })
@@ -383,7 +385,7 @@ function InterpreterController($rootScope, $scope, baseUrlSrv, InterpreterServic
             let index = $scope.interpreterSettings.findIndex(is => is.id === settingId)
             $scope.interpreterSettings.splice(index, 1)
           })
-          .catch(handleHttpError(`Failed to remove interpreter setting: ${settingId}`))
+          .catch(ehs.handleHttpError(`Failed to remove interpreter setting: ${settingId}`))
       }
     })
   }
@@ -429,7 +431,7 @@ function InterpreterController($rootScope, $scope, baseUrlSrv, InterpreterServic
             let index = $scope.interpreterSettings.findIndex(is => is.id === settingId)
             $scope.interpreterSettings[index] = updatedInterpreterSetting
           })
-          .catch(handleHttpError('Failed to restart interpreter'))
+          .catch(ehs.handleHttpError('Failed to restart interpreter'))
       }
     })
   }
@@ -500,7 +502,7 @@ function InterpreterController($rootScope, $scope, baseUrlSrv, InterpreterServic
         $scope.showAddNewSetting = false
         return getInterpreterSettings()
       })
-      .catch(handleHttpError('Failed to add a new interpreter'))
+      .catch(ehs.handleHttpError('Failed to add a new interpreter'))
   }
 
   $scope.cancelInterpreterSetting = function () {
@@ -648,7 +650,7 @@ function InterpreterController($rootScope, $scope, baseUrlSrv, InterpreterServic
       .then(repositories => {
         $scope.repositories = repositories
       })
-      .catch(handleHttpError('Failed to get repositories'))
+      .catch(ehs.handleHttpError('Failed to get repositories'))
   }
 
   $scope.addNewRepository = function () {
@@ -659,7 +661,7 @@ function InterpreterController($rootScope, $scope, baseUrlSrv, InterpreterServic
         angular.element('#repoModal').modal('hide')
         return getRepositories()
       })
-      .catch(handleHttpError('Failed to add a new repository'))
+      .catch(ehs.handleHttpError('Failed to add a new repository'))
   }
 
   $scope.removeRepository = function (repoId) {
@@ -675,7 +677,7 @@ function InterpreterController($rootScope, $scope, baseUrlSrv, InterpreterServic
             let index = $scope.repositories.findIndex(r => r.id === repoId)
             $scope.repositories.splice(index, 1)
           })
-          .catch(handleHttpError(`Failed to remove repository: ${repoId}`))
+          .catch(ehs.handleHttpError(`Failed to remove repository: ${repoId}`))
       }
     })
   }
@@ -718,7 +720,7 @@ function InterpreterController($rootScope, $scope, baseUrlSrv, InterpreterServic
           BootstrapDialog.alert({ message: message })
         }
       })
-      .catch(handleHttpError('Failed to get information for Spark UI'))
+      .catch(ehs.handleHttpError('Failed to get information for Spark UI'))
   }
 
   $scope.getInterpreterBindingModeDocsLink = function() {
@@ -741,38 +743,6 @@ function InterpreterController($rootScope, $scope, baseUrlSrv, InterpreterServic
       verticalPosition: 'bottom',
     })
   }
-
-  function handleHttpError(defaultMessage) {
-    return function(response) {
-      const status = response.status
-      let message = defaultMessage
-
-      if (response.data && response.data.message) {
-        message = response.data.message
-      }
-
-      if (status === 401) {
-        ngToast.danger({
-          content: 'You don\'t have permission on this page',
-          verticalPosition: 'bottom',
-          timeout: '3000'
-        })
-        setTimeout(function () {
-          window.location = baseUrlSrv.getBase()
-        }, 3000)
-      } else {
-        ngToast.danger({
-          content: message,
-          verticalPosition: 'bottom',
-          timeout: '3000'
-        })
-      }
-
-      console.log('Error %o %o', status, message)
-    }
-  }
-
-  $scope.handleHttpError = handleHttpError
 
   init()
 }

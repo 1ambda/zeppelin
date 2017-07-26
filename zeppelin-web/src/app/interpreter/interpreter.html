@@ -97,9 +97,9 @@ limitations under the License.
             <span style="display:inline-block" ng-repeat="interpreter in setting.interpreterGroup"
                   title="{{interpreter.class}}">
               <span ng-show="!$first">, </span>
-              %<span ng-show="!$parent.$first || $first">{{setting.name}}</span
-              ><span ng-show="(!$parent.$first || $first) && !$first">.</span
-              ><span ng-show="!$first">{{interpreter.name}}</span>
+              %<span ng-show="!$parent.$first || $first">{{setting.name}}</span>
+              <span ng-show="(!$parent.$first || $first) && !$first">.</span>
+              <span ng-show="!$first">{{interpreter.name}}</span>
             </span>
           </small>
 
@@ -344,13 +344,13 @@ limitations under the License.
     <div class="row interpreter" ng-if="setting.option.isExistingProcess">
       <div class="col-md-12">
         <b>Host</b>
-          <input id="newInterpreterSettingHost" input pu-elastic-input
-            pu-elastic-input-minwidth="180px" ng-model="setting.option.host" ng-disabled="!valueform.$visible"  />
+        <input id="newInterpreterSettingHost" input pu-elastic-input
+               pu-elastic-input-minwidth="180px" ng-model="setting.option.host" ng-disabled="!valueform.$visible"  />
       </div>
       <div class="col-md-12">
-         <b>Port</b>
-         <input id="newInterpreterSettingPort" input pu-elastic-input
-            pu-elastic-input-minwidth="180px" ng-model="setting.option.port"  ng-disabled="!valueform.$visible" />
+        <b>Port</b>
+        <input id="newInterpreterSettingPort" input pu-elastic-input
+               pu-elastic-input-minwidth="180px" ng-model="setting.option.port"  ng-disabled="!valueform.$visible" />
       </div>
     </div>
     <div class="row interpreter">
@@ -376,10 +376,10 @@ limitations under the License.
             </p>
             <div>
 
-            <span class="owners">Owners </span>
-            <select id="{{setting.name}}Owners" class="form-control" multiple="multiple" ng-disabled="!valueform.$visible">
-              <option ng-repeat="owner in setting.option.owners" selected="selected">{{owner}}</option>
-            </select>
+              <span class="owners">Owners </span>
+              <select id="{{setting.name}}Owners" class="form-control" multiple="multiple" ng-disabled="!valueform.$visible">
+                <option ng-repeat="owner in setting.option.owners" selected="selected">{{owner}}</option>
+              </select>
             </div>
           </div>
         </div>
@@ -394,11 +394,11 @@ limitations under the License.
         <h5>Properties</h5>
         <table class="table table-striped">
           <thead>
-            <tr>
-              <th style="width:40%">name</th>
-              <th style="width:40%">value</th>
-              <th style="width:20%" ng-if="valueform.$visible">action</th>
-            </tr>
+          <tr>
+            <th style="width:40%">name</th>
+            <th style="width:40%">value</th>
+            <th style="width:20%" ng-if="valueform.$visible">action</th>
+          </tr>
           </thead>
           <tr ng-repeat="key in setting.properties | sortByKey" >
             <td style="vertical-align: middle;">{{key}}</td>
@@ -430,7 +430,7 @@ limitations under the License.
             </td>
             <td style="vertical-align: middle;" ng-if="valueform.$visible">
               <button class="btn btn-default btn-sm fa fa-remove"
-                   ng-click="removeInterpreterProperty(key, setting.id)">
+                      ng-click="removeInterpreterProperty(key, setting.id)">
               </button>
             </td>
           </tr>
@@ -468,11 +468,11 @@ limitations under the License.
           These dependencies will be added to classpath when interpreter process starts.</p>
         <table class="table table-striped">
           <thead>
-            <tr>
-              <th style="width:40%">artifact</th>
-              <th style="width:40%">exclude</th>
-              <th style="width:20%" ng-if="valueform.$visible">action</th>
-            </tr>
+          <tr>
+            <th style="width:40%">artifact</th>
+            <th style="width:40%">exclude</th>
+            <th style="width:20%" ng-if="valueform.$visible">action</th>
+          </tr>
           </thead>
           <tr ng-repeat="dep in setting.dependencies">
             <td>
@@ -492,7 +492,7 @@ limitations under the License.
             </td>
             <td ng-if="valueform.$visible">
               <button class="btn btn-default btn-sm fa fa-remove"
-                   ng-click="removeInterpreterDependency(dep.groupArtifactVersion, setting.id)">
+                      ng-click="removeInterpreterDependency(dep.groupArtifactVersion, setting.id)">
               </button>
             </td>
           </tr>
@@ -511,7 +511,7 @@ limitations under the License.
             </td>
             <td>
               <button class="btn btn-default btn-sm fa fa-plus"
-                   ng-click="addNewInterpreterDependency(setting.id)">
+                      ng-click="addNewInterpreterDependency(setting.id)">
               </button>
             </td>
           </tr>
