@@ -97,8 +97,8 @@ export class InterpreterService {
 
         if (isSparkAppRunning) {
           sparkAppUrl = response.data.body.url
-        } else {
-          message = response.data.body.message
+
+          if (!sparkAppUrl) { message = response.data.body.message }
         }
 
         return {
