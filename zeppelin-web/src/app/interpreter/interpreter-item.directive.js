@@ -12,9 +12,7 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp').directive('interpreterItem', InterpreterItemDirective)
-
-function InterpreterItemDirective ($timeout) {
+export function InterpreterItemDirective ($timeout) {
   'ngInject'
 
   return {

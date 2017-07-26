@@ -12,9 +12,7 @@
  * limitations under the License.
  */
 
-angular.module('zeppelinWebApp').filter('sortByKey', sortByKey)
-
-function sortByKey () {
+export function SortByKeyFilter () {
   return function (properties) {
     let sortedKeys = properties ? Object.keys(properties) : []
     return sortedKeys.sort()

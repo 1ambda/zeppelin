@@ -13,11 +13,6 @@
  */
 
 import { ParagraphStatus, } from '../notebook/paragraph/paragraph.status'
-import { InterpreterService } from './interpreter.service'
-
-angular.module('zeppelinWebApp')
-  .controller('InterpreterCtrl', InterpreterController)
-  .service('InterpreterService', InterpreterService)
 
 export const InterpreterSessionMode = {
   ISOLATED: 'isolated',
@@ -30,7 +25,7 @@ export const InterpreterSessionUnit = {
   PER_NOTE: 'perNote',
 }
 
-function InterpreterController($rootScope, $scope, ngToast, $timeout, $route,
+export function InterpreterController($rootScope, $scope, ngToast, $timeout, $route,
                                baseUrlSrv, InterpreterService, ErrorHandlerService) {
   'ngInject'
 
