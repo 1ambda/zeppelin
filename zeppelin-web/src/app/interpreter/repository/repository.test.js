@@ -38,7 +38,8 @@ describe('RepositoryComponent', () => {
         'url': 'http: //repo1.maven.org/maven2/',
         'releasePolicy': {'enabled': true, 'updatePolicy': 'daily', 'checksumPolicy': 'warn'},
         'snapshotPolicy': {'enabled': true, 'updatePolicy': 'daily', 'checksumPolicy': 'warn'},
-        'mirroredRepositories': [], 'repositoryManager': false
+        'mirroredRepositories': [],
+        'repositoryManager': false
       },
       {
         'id': 'local',
@@ -46,7 +47,8 @@ describe('RepositoryComponent', () => {
         'url': 'file: ///Users/1ambda/.m2/repository',
         'releasePolicy': {'enabled': true, 'updatePolicy': 'daily', 'checksumPolicy': 'warn'},
         'snapshotPolicy': {'enabled': true, 'updatePolicy': 'daily', 'checksumPolicy': 'warn'},
-        'mirroredRepositories': [], 'repositoryManager': false
+        'mirroredRepositories': [],
+        'repositoryManager': false
       },
     ]
   }

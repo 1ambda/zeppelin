@@ -6,17 +6,11 @@ describe('InterpreterController', function () {
 
   let ctrl // controller instance
   let $scope
-  let $compile
   let $controller // controller generator
-  let $httpBackend
-  let ngToast
 
-  beforeEach(inject((_$controller_, _$rootScope_, _$compile_, _$http_, _$httpBackend_, _ngToast_) => {
+  beforeEach(inject((_$controller_, _$rootScope_) => {
     $scope = _$rootScope_.$new()
-    $compile = _$compile_
     $controller = _$controller_
-    $httpBackend = _$httpBackend_
-    ngToast = _ngToast_
   }))
 
   it('should return new interpreter setting when setting id is undefined in getSettingBySettingId', () => {
@@ -85,11 +79,6 @@ describe('InterpreterController', function () {
     expect(option2.session).toEqual(false)
     expect(option2.process).toEqual(true)
   })
-
-  function checkUnknownHttpRequests() {
-    $httpBackend.verifyNoOutstandingExpectation()
-    $httpBackend.verifyNoOutstandingRequest()
-  }
 
   function getMockInterpreterSettings() {
     return [

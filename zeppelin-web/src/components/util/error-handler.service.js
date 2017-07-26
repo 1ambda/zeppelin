@@ -35,7 +35,7 @@ export class ErrorHandlerService {
           verticalPosition: 'bottom',
           timeout: '3000'
         })
-        setTimeout( () => { window.location = this.BaseUrlService.getBase() }, 3000)
+        setTimeout(() => { window.location = this.BaseUrlService.getBase() }, 3000)
       } else {
         this.toast.danger({
           content: message,
