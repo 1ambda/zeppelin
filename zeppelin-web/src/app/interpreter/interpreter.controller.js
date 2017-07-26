@@ -19,6 +19,17 @@ angular.module('zeppelinWebApp')
   .controller('InterpreterCtrl', InterpreterController)
   .service('InterpreterService', InterpreterService)
 
+export const InterpreterSessionMode = {
+  ISOLATED: 'isolated',
+  SCOPED: 'scoped',
+  SHARED: 'shared',
+}
+
+export const InterpreterSessionUnit = {
+  PER_USER: 'perUser',
+  PER_NOTE: 'perNote',
+}
+
 function InterpreterController($rootScope, $scope, baseUrlSrv, InterpreterService, ngToast, $timeout, $route) {
   'ngInject'
 
@@ -170,31 +181,6 @@ function InterpreterController($rootScope, $scope, baseUrlSrv, InterpreterServic
     interpreterSettingsTmp[index] = angular.copy($scope.interpreterSettings[index])
   }
 
-  $scope.setPerNoteOption = function (settingId, sessionOption) {
-    let option
-    if (settingId === undefined) {
-      option = $scope.newInterpreterSetting.option
-    } else {
-      let index = $scope.interpreterSettings.findIndex(is => is.id === settingId)
-      let setting = $scope.interpreterSettings[index]
-      option = setting.option
-    }
-
-    if (sessionOption === 'isolated') {
-      option.perNote = sessionOption
-      option.session = false
-      option.process = true
-    } else if (sessionOption === 'scoped') {
-      option.perNote = sessionOption
-      option.session = true
-      option.process = false
-    } else {
-      option.perNote = 'shared'
-      option.session = false
-      option.process = false
-    }
-  }
-
   $scope.defaultValueByType = function (setting) {
     if (setting.propertyType === 'checkbox') {
       setting.propertyValue = false
@@ -204,67 +190,61 @@ function InterpreterController($rootScope, $scope, baseUrlSrv, InterpreterServic
     setting.propertyValue = ''
   }
 
-  $scope.setPerUserOption = function (settingId, sessionOption) {
-    let option
-    if (settingId === undefined) {
-      option = $scope.newInterpreterSetting.option
-    } else {
-      let index = $scope.interpreterSettings.findIndex(is => is.id === settingId)
-      let setting = $scope.interpreterSettings[index]
-      option = setting.option
-    }
+  /**
+   * @param setting
+   * @param sessionMode `isolated`, `scope` or `shared`
+   * @param sessionUnit `perUser` or `perNote`
+   */
+  $scope.setInterpreterSessionOption = function(setting, sessionMode, sessionUnit) {
+    const option = setting.option
 
-    if (sessionOption === 'isolated') {
-      option.perUser = sessionOption
+    if (sessionMode === InterpreterSessionMode.ISOLATED) {
+      option[sessionUnit] = sessionMode
       option.session = false
       option.process = true
-    } else if (sessionOption === 'scoped') {
-      option.perUser = sessionOption
+    } else if (sessionMode === InterpreterSessionMode.SCOPED) {
+      option[sessionUnit] = sessionMode
       option.session = true
       option.process = false
     } else {
-      option.perUser = 'shared'
+      option[sessionUnit] = InterpreterSessionMode.SHARED
       option.session = false
       option.process = false
     }
   }
 
-  $scope.getPerNoteOption = function (settingId) {
-    let option
-    if (settingId === undefined) {
-      option = $scope.newInterpreterSetting.option
+  $scope.getSettingBySettingId = function(settingId) {
+    let setting
+    if (typeof settingId === 'undefined') {
+      setting = $scope.newInterpreterSetting
     } else {
       let index = $scope.interpreterSettings.findIndex(is => is.id === settingId)
-      let setting = $scope.interpreterSettings[index]
-      option = setting.option
+      setting = $scope.interpreterSettings[index]
     }
 
-    if (option.perNote === 'scoped') {
-      return 'scoped'
-    } else if (option.perNote === 'isolated') {
-      return 'isolated'
-    } else {
-      return 'shared'
-    }
+    return setting
+  }
+
+  $scope.setPerNoteOption = function (settingId, sessionMode) {
+    const setting = $scope.getSettingBySettingId(settingId)
+    $scope.setInterpreterSessionOption(setting, sessionMode, InterpreterSessionUnit.PER_NOTE)
+  }
+
+  $scope.setPerUserOption = function (settingId, sessionMode) {
+    const setting = $scope.getSettingBySettingId(settingId)
+    $scope.setInterpreterSessionOption(setting, sessionMode, InterpreterSessionUnit.PER_USER)
+  }
+
+  $scope.getPerNoteOption = function (settingId) {
+    const setting = $scope.getSettingBySettingId(settingId)
+    const option = setting.option
+    return option[InterpreterSessionUnit.PER_NOTE]
   }
 
   $scope.getPerUserOption = function (settingId) {
-    let option
-    if (settingId === undefined) {
-      option = $scope.newInterpreterSetting.option
-    } else {
-      let index = $scope.interpreterSettings.findIndex(is => is.id === settingId)
-      let setting = $scope.interpreterSettings[index]
-      option = setting.option
-    }
-
-    if (option.perUser === 'scoped') {
-      return 'scoped'
-    } else if (option.perUser === 'isolated') {
-      return 'isolated'
-    } else {
-      return 'shared'
-    }
+    const setting = $scope.getSettingBySettingId(settingId)
+    const option = setting.option
+    return option[InterpreterSessionUnit.PER_USER]
   }
 
   $scope.getInterpreterRunningOption = function (settingId) {
@@ -274,17 +254,11 @@ function InterpreterController($rootScope, $scope, baseUrlSrv, InterpreterServic
     let perNoteModeName = 'Per Note'
     let perUserModeName = 'Per User'
 
-    let option
-    if (settingId === undefined) {
-      option = $scope.newInterpreterSetting.option
-    } else {
-      let index = $scope.interpreterSettings.findIndex(is => is.id === settingId)
-      let setting = $scope.interpreterSettings[index]
-      option = setting.option
-    }
+    const setting = $scope.getSettingBySettingId(settingId)
+    const option = setting.option
 
-    let perNote = option.perNote
-    let perUser = option.perUser
+    let perNote = option[InterpreterSessionUnit.PER_NOTE]
+    let perUser = option[InterpreterSessionUnit.PER_USER]
 
     // Globally == shared_perNote + shared_perUser
     if (perNote === sharedModeName && perUser === sharedModeName) {
@@ -292,12 +266,12 @@ function InterpreterController($rootScope, $scope, baseUrlSrv, InterpreterServic
     }
 
     if ($rootScope.ticket.ticket === 'anonymous' && $rootScope.ticket.roles === '[]') {
-      if (perNote !== undefined && typeof perNote === 'string' && perNote !== '') {
+      if (typeof perNote !== 'undefined' && typeof perNote === 'string' && perNote !== '') {
         return perNoteModeName
       }
     } else if ($rootScope.ticket.ticket !== 'anonymous') {
-      if (perNote !== undefined && typeof perNote === 'string' && perNote !== '') {
-        if (perUser !== undefined && typeof perUser === 'string' && perUser !== '') {
+      if (typeof perNote !== 'undefined' && typeof perNote === 'string' && perNote !== '') {
+        if (typeof perUser !== 'undefined' && typeof perUser === 'string' && perUser !== '') {
           return perUserModeName
         }
         return perNoteModeName
@@ -310,16 +284,11 @@ function InterpreterController($rootScope, $scope, baseUrlSrv, InterpreterServic
   }
 
   $scope.setInterpreterRunningOption = function (settingId, isPerNoteMode, isPerUserMode) {
-    let option
-    if (settingId === undefined) {
-      option = $scope.newInterpreterSetting.option
-    } else {
-      let index = $scope.interpreterSettings.findIndex(is => is.id === settingId)
-      let setting = $scope.interpreterSettings[index]
-      option = setting.option
-    }
-    option.perNote = isPerNoteMode
-    option.perUser = isPerUserMode
+    const setting = $scope.getSettingBySettingId(settingId)
+    const option = setting.option
+
+    option[InterpreterSessionUnit.PER_NOTE] = isPerNoteMode
+    option[InterpreterSessionUnit.PER_USER] = isPerUserMode
   }
 
   $scope.updateInterpreterSetting = function (form, settingId) {
@@ -802,6 +771,8 @@ function InterpreterController($rootScope, $scope, baseUrlSrv, InterpreterServic
       console.log('Error %o %o', status, message)
     }
   }
+
+  $scope.handleHttpError = handleHttpError
 
   init()
 }
