@@ -15,8 +15,6 @@
 import { ParagraphStatus, } from '../notebook/paragraph/paragraph.status'
 import { InterpreterService } from './interpreter.service'
 
-import './repository'
-
 angular.module('zeppelinWebApp')
   .controller('InterpreterCtrl', InterpreterController)
   .service('InterpreterService', InterpreterService)

@@ -16,5 +16,5 @@ import { RepositoryService } from './repository.service'
 import { RepositoryComponent } from './repository.component'
 
 angular.module('zeppelinWebApp')
-  .component('repository', RepositoryComponent)
+  .component('repositoryView', RepositoryComponent)
   .service('RepositoryService', RepositoryService)
