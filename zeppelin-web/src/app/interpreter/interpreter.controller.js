@@ -14,16 +14,7 @@
 
 import { ParagraphStatus, } from '../notebook/paragraph/paragraph.status'
 
-export const InterpreterSessionMode = {
-  ISOLATED: 'isolated',
-  SCOPED: 'scoped',
-  SHARED: 'shared',
-}
-
-export const InterpreterSessionUnit = {
-  PER_USER: 'perUser',
-  PER_NOTE: 'perNote',
-}
+import { InterpreterSessionUnit, InterpreterSessionMode } from './interpreter-session'
 
 export function InterpreterController($rootScope, $scope, ngToast, $timeout, $route,
                                baseUrlSrv, InterpreterService, ErrorHandlerService) {
@@ -221,72 +212,6 @@ export function InterpreterController($rootScope, $scope, ngToast, $timeout, $ro
     return setting
   }
 
-  $scope.setPerNoteOption = function (settingId, sessionMode) {
-    const setting = $scope.getSettingBySettingId(settingId)
-    $scope.setInterpreterSessionOption(setting, sessionMode, InterpreterSessionUnit.PER_NOTE)
-  }
-
-  $scope.setPerUserOption = function (settingId, sessionMode) {
-    const setting = $scope.getSettingBySettingId(settingId)
-    $scope.setInterpreterSessionOption(setting, sessionMode, InterpreterSessionUnit.PER_USER)
-  }
-
-  $scope.getPerNoteOption = function (settingId) {
-    const setting = $scope.getSettingBySettingId(settingId)
-    const option = setting.option
-    return option[InterpreterSessionUnit.PER_NOTE]
-  }
-
-  $scope.getPerUserOption = function (settingId) {
-    const setting = $scope.getSettingBySettingId(settingId)
-    const option = setting.option
-    return option[InterpreterSessionUnit.PER_USER]
-  }
-
-  $scope.getInterpreterRunningOption = function (settingId) {
-    let sharedModeName = 'shared'
-
-    let globallyModeName = 'Globally'
-    let perNoteModeName = 'Per Note'
-    let perUserModeName = 'Per User'
-
-    const setting = $scope.getSettingBySettingId(settingId)
-    const option = setting.option
-
-    let perNote = option[InterpreterSessionUnit.PER_NOTE]
-    let perUser = option[InterpreterSessionUnit.PER_USER]
-
-    // Globally == shared_perNote + shared_perUser
-    if (perNote === sharedModeName && perUser === sharedModeName) {
-      return globallyModeName
-    }
-
-    if ($rootScope.ticket.ticket === 'anonymous' && $rootScope.ticket.roles === '[]') {
-      if (typeof perNote !== 'undefined' && typeof perNote === 'string' && perNote !== '') {
-        return perNoteModeName
-      }
-    } else if ($rootScope.ticket.ticket !== 'anonymous') {
-      if (typeof perNote !== 'undefined' && typeof perNote === 'string' && perNote !== '') {
-        if (typeof perUser !== 'undefined' && typeof perUser === 'string' && perUser !== '') {
-          return perUserModeName
-        }
-        return perNoteModeName
-      }
-    }
-
-    option.perNote = sharedModeName
-    option.perUser = sharedModeName
-    return globallyModeName
-  }
-
-  $scope.setInterpreterRunningOption = function (settingId, isPerNoteMode, isPerUserMode) {
-    const setting = $scope.getSettingBySettingId(settingId)
-    const option = setting.option
-
-    option[InterpreterSessionUnit.PER_NOTE] = isPerNoteMode
-    option[InterpreterSessionUnit.PER_USER] = isPerUserMode
-  }
-
   $scope.updateInterpreterSetting = function (form, settingId) {
     const thisConfirm = BootstrapDialog.confirm({
       closable: false,
@@ -317,13 +242,6 @@ export function InterpreterController($rootScope, $scope, ngToast, $timeout, $ro
         }
         if (setting.option.setPermission === undefined) {
           setting.option.setPermission = false
-        }
-        if (setting.option.isUserImpersonate === undefined) {
-          setting.option.isUserImpersonate = false
-        }
-        if (!($scope.getInterpreterRunningOption(settingId) === 'Per User' &&
-            $scope.getPerUserOption(settingId) === 'isolated')) {
-          setting.option.isUserImpersonate = false
         }
         if (setting.option.remote === undefined) {
           // remote always true for now
@@ -655,11 +573,6 @@ export function InterpreterController($rootScope, $scope, ngToast, $timeout, $ro
       .catch(ehs.handleHttpError('Failed to get information for Spark UI'))
   }
 
-  $scope.getInterpreterBindingModeDocsLink = function() {
-    const currentVersion = $rootScope.zeppelinVersion
-    return `https://zeppelin.apache.org/docs/${currentVersion}/usage/interpreter/interpreter_binding_mode.html`
-  }
-
   $scope.isEmptyDependencies = function(dependencies) {
     return dependencies.length === 0
   }
@@ -674,6 +587,27 @@ export function InterpreterController($rootScope, $scope, ngToast, $timeout, $ro
       timeout: '3000',
       verticalPosition: 'bottom',
     })
+  }
+
+  $scope.onSessionUnitChanged = function($event) {
+    const { settingId, isPerNote, isPerUser, } = $event
+    const setting = this.getSettingBySettingId(settingId)
+    const option = setting.option
+
+    option[InterpreterSessionUnit.PER_NOTE] = isPerNote
+    option[InterpreterSessionUnit.PER_USER] = isPerUser
+  }
+
+  $scope.onPerNoteSessionModeChanged = function($event) {
+    const { settingId, sessionMode, } = $event
+    const setting = this.getSettingBySettingId(settingId)
+    this.setInterpreterSessionOption(setting, sessionMode, InterpreterSessionUnit.PER_NOTE)
+  }
+
+  $scope.onPerUserSessionModeChanged = function($event) {
+    const { settingId, sessionMode, } = $event
+    const setting = this.getSettingBySettingId(settingId)
+    this.setInterpreterSessionOption(setting, sessionMode, InterpreterSessionUnit.PER_USER)
   }
 
   init()
