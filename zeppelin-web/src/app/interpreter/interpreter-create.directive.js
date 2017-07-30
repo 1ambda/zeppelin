@@ -12,14 +12,21 @@
  * limitations under the License.
  */
 
-import InterpreterItemTemplate from './interpreter-item.html'
+import InterpreterCreateTemplate from './interpreter-create.html'
 
-export function InterpreterItemDirective () {
+export function InterpreterCreateDirective ($timeout) {
   'ngInject'
 
   return {
     restrict: 'A',
-    template: InterpreterItemTemplate,
-    link: function (scope, element, attr) { }
+    template: InterpreterCreateTemplate,
+    link: function (scope, element, attr) {
+      if (scope.$last === true) {
+        $timeout(function () {
+          let id = 'ngRenderFinished'
+          scope.$emit(id)
+        })
+      }
+    }
   }
 }
